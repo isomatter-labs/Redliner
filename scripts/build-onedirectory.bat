@@ -1,6 +1,7 @@
 pyinstaller ^
 --noconfirm ^
 --windowed ^
+--onedir ^
 --clean ^
 --exclude-module pyqt5 ^
 --exclude-module numba ^
@@ -16,3 +17,5 @@ pyinstaller ^
 --workpath "../build" ^
 --name "redliner" ^
 ..\redliner\redliner.py
+
+ISCC installer.iss
