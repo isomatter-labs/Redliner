@@ -1,15 +1,15 @@
 from PyQt6 import QtWidgets as qtw
-from .common import resource_path
+from common import resource_path
 import re
 
 
 VERSION = "x.x.x"
 version_pattern = re.compile(r'\[(\d+\.\d+\.\d+)\]')
-with open(resource_path("CHANGELOG.md")) as f:
+with open(resource_path("CHANGELOG.md", None)) as f:
     for line in f:
         match = version_pattern.search(line)
         if match:
-            VERSION = match.group(1)[1:-1]
+            VERSION = match.group(1)
 
 
 
