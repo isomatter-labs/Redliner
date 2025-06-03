@@ -8,14 +8,13 @@ pyinstaller ^
 --exclude-module matplotlib ^
 --exclude-module scipy ^
 --exclude-module PySide2 ^
---splash "../res/splash.png" ^
---icon "../res/icon.ico" ^
---distpath "../dist/onedirectory" ^
---add-data "../res/*;res" ^
---add-data "../CHANGELOG.md;CHANGELOG.md" ^
---add-data "../res/icons/*;res/icons" ^
---workpath "../build" ^
+--splash "./res/splash.png" ^
+--icon "./res/icon.ico" ^
+--distpath "./dist/onedirectory" ^
+--add-data "./res/*;res" ^
+--add-data "./CHANGELOG.md;." ^
+--workpath "./build" ^
 --name "redliner" ^
-..\redliner\redliner.py
+.\redliner\redliner.py
 
-ISCC installer.iss
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" scripts/installer.iss
