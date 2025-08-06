@@ -3,10 +3,10 @@ import time
 import webbrowser
 
 from PyQt6 import QtWidgets as qtw, QtCore as qtc, QtGui as qtg
-import fitz
 from PyQt6.QtGui import QSurfaceFormat, QOpenGLContext, QOffscreenSurface
 from PyQt6.QtOpenGL import QOpenGLFramebufferObjectFormat, QOpenGLFramebufferObject
 from PyQt6.QtPdf import QPdfDocument
+import fitz
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 from OpenGL.GL import *
 import numpy as np
@@ -19,11 +19,157 @@ def qt_render_pdf_page_to_qimage(path, page_number, scale):
     rendered = document.render(page_number, qtc.QSize(int(page.mediabox_size.x*scale), int(page.mediabox_size.y*scale)))
     return rendered
 
+class Feature:
+    pass
+
 class RenderWidget(QOpenGLWidget):
+    signalMouseClick = qtc.pyqtSignal(float, float, qtc.Qt.MouseButton) # canvas X,Y
+    signalMouseMove = qtc.pyqtSignal(float, float)
+    signalMouseRelease = qtc.pyqtSignal(float, float, qtc.Qt.MouseButton)
+    signalKeyPressed = qtc.pyqtSignal(float, float, qtc.Qt.Key)
+    signalKeyReleased = qtc.pyqtSignal(float, float, qtc.Qt.Key)
+    
+    def __init__(self):
+        super().__init__()
+        self.setMouseTracking(True)
+        self.features = {}
+        self.i = 0
+        self.clean = False
+        self.initialized = False
+        self.x = 0 # pixels, top-left is center
+        self.y = 0
+        self.angle = 0 # degrees
+        self.scale = 1
+        self.setFocusPolicy(qtc.Qt.FocusPolicy.StrongFocus)
+        qtc.QTimer.singleShot(1, self.initializeGL)
+
+    def initializeGL(self):
+        glEnable(GL_TEXTURE_2D)
+        glEnable(GL_BLEND)
+
+        glEnable(GL_LINE_SMOOTH)
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+
+        glEnable(GL_POLYGON_SMOOTH)
+        glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
+        self.initialized = True
+
+    def resizeGL(self, w, h):
+        glViewport(0, 0, w, h)
+
+    def paintGL(self):
+        if not self.initialized:
+            return
+        self.do_draw(self.x, self.y, self.width(), self.height(), self.scale, self.angle)
+        return super().paintGL()
+
+    def do_draw(self, x = 0, y = 0, w = None, h = None, s = 1, a = 0):
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        if w is None:
+            w = 640 #self.image.width()
+            h = 480 #self.image.height()
+            x = -w/2
+            y = h/2
+
+        def cnv_xy_to_disp(_x: float, _y: float):
+            """Go from image XY to viewport XY"""
+            _x += x
+            _y -= y
+            _x *= s
+            _y *= s
+            _x, _y = _x * np.cos(a) + _y * np.sin(a), _x * np.cos(a - np.pi / 2) + _y * np.sin(a - np.pi / 2)
+            _x += w / 2
+            _y += h / 2
+            return _x, _y
+
+        def disp_xy_to_cnv(_x: float, _y: float):
+            """Go from viewport XY to image XY"""
+            # print(x, y)
+            _x -= w / 2
+            _y -= h / 2
+            r = np.sqrt(_x ** 2 + _y ** 2)
+            t = np.arctan2(-_y, _x)
+            r /= s
+            t += a
+            _x, _y = r * np.cos(t), r * np.sin(t)
+            # x += self.x / self.scale
+            # y -= self.y / self.scale
+            # x /= self.scale
+            # y /= self.scale
+            _x -= x
+            _y += y
+            return _x, _y
+
+        def disp_to_gl(_x: float, _y: float):
+            return 2 * _x / w - 1, 1 - 2 * _y / h
+
+        def cnv_xy_to_gl(_x: float, _y: float):
+            return disp_to_gl(*cnv_xy_to_disp(_x, _y))
+
+        glLoadIdentity()
+        # if self.image is not None:
+        #     glBlendEquation(GL_FUNC_ADD)
+        #     glBegin(GL_QUADS)
+        #     glColor3f(1.0, 1.0, 1.0)
+        #     glTexCoord2f(0, 1); glVertex2f(*cnv_xy_to_gl(0, 0))
+        #     glTexCoord2f(1, 1); glVertex2f(*cnv_xy_to_gl(self.image.width(), 0))
+        #     glTexCoord2f(1, 0); glVertex2f(*cnv_xy_to_gl(self.image.width(), self.image.height()))
+        #     glTexCoord2f(0, 0); glVertex2f(*cnv_xy_to_gl(0, self.image.height()))
+        #     glEnd()
+
+        #     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        #     glBindTexture(GL_TEXTURE_2D, self.texture_id)
+        #     glBegin(GL_QUADS)
+        #     glTexCoord2f(0, 1); glVertex2f(*cnv_xy_to_gl(0, 0))
+        #     glTexCoord2f(1, 1); glVertex2f(*cnv_xy_to_gl(self.image.width(), 0))
+        #     glTexCoord2f(1, 0); glVertex2f(*cnv_xy_to_gl(self.image.width(), self.image.height()))
+        #     glTexCoord2f(0, 0); glVertex2f(*cnv_xy_to_gl(0, self.image.height()))
+        #     glEnd()
+        #     glBindTexture(GL_TEXTURE_2D, 0)
+
+        glBlendEquation(GL_FUNC_ADD)
+        glBlendFunc(GL_ONE, GL_ONE)
+
+
+        glBegin(GL_TRIANGLES)
+        glColor3f(1.0, 0.0, 0.0)
+        glVertex2f(-0.5, 0.3)
+        glColor3f(0.0, 0.0, 0.0)
+        glVertex2f(0.6, 0.6)
+        glColor3f(1.0, 1.0, 1.0)
+        glVertex2f(0.3, -0.6)
+        glEnd()
+
+    def add_feature(self, f:Feature)->int:
+        self.features[self.i] = f
+        self.i += 1
+        self.clean = False
+        return self.i-1
+    
+    def remove_feature(self, i:int):
+        self.features.pop(i)
+        self.clean = False
+
+    def mousePressEvent(self, a0):
+        self.signalMouseClick.emit(a0.pos().x(), a0.pos().y(), a0.button())
+
+    def mouseMoveEvent(self, a0):
+        self.signalMouseMove.emit(a0.pos().x(), a0.pos().y())
+
+    def mouseReleaseEvent(self, a0):
+        self.signalMouseClick.emit(a0.pos().x(), a0.pos().y(), a0.button())
+        
+    def keyPressEvent(self, a0):
+        self.signalKeyPressed.emit(a0.key())
+        
+    def keyReleaseEvent(self, a0):
+        self.signalKeyReleased.emit(a0.key())
+
+class RenderWidget2(QOpenGLWidget):
     signalClick = qtc.pyqtSignal(float, float, qtc.Qt.MouseButton) # canvas X,Y
     signalDrag = qtc.pyqtSignal(float, float)
     signalRelease = qtc.pyqtSignal(float, float, qtc.Qt.MouseButton)
-    signalKeyPressed = qtc.pyqtSignal
+    signalKeyPressed = qtc.pyqtSignal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,7 +185,7 @@ class RenderWidget(QOpenGLWidget):
         self.mouse_buf = []
         self.angle = 0 # degrees
         self.scale = 1
-        self.image = None#qt_render_pdf_page_to_qimage(r"C:\Users\jettcaleb\Downloads\014-05168-01.pdf", 0, 20)
+        self.image = None
 
         qtc.QTimer.singleShot(1, self.home)
         self.setFocusPolicy(qtc.Qt.FocusPolicy.StrongFocus)
@@ -51,6 +197,8 @@ class RenderWidget(QOpenGLWidget):
             self.home()
         else:
             self.image = image.copy()
+            
+            self.initializeGL()
             self.home()
 
     def initializeGL(self):
@@ -381,3 +529,46 @@ class RenderWidget(QOpenGLWidget):
             if im is not None:
                 im.save("out.png")
                 webbrowser.open("out.png")
+
+
+class MultipagePreviewer(qtw.QListWidget):
+    def __init__(self, renderer:RenderWidget):
+        super().__init__()
+        self.images = []
+        self.image_items = []
+        self.scale = 5
+        self.setFixedWidth(128)
+        self.renderer = renderer
+
+    def selectionChanged(self, selected, deselected):
+        if selected:
+            self.images[selected.indexes()[0].row()](self.scale, self.renderer.set_image)
+        else:
+            self.renderer.set_image(None)
+        return super().selectionChanged(selected, deselected)
+    
+
+    def set_images(self, images:list):
+        """
+            images - list of image fetch request callables. 
+                Argument 1 of the callable is the render scale. 
+                Argument 2 of the callable is the callback
+        """
+        self.clear()
+        self.images = images
+        self.image_items.clear()
+        for i, im in enumerate(images):
+            item = qtw.QListWidgetItem()
+            item.setSizeHint(qtc.QSize(120, 120))
+            self.addItem(item)
+            self.image_items.append(item)
+            im(0.1, lambda img, _i=i: self.set_preview(_i, img))
+
+    def set_preview(self, idx, img:qtg.QImage):
+        print(idx)
+        if idx > len(self.images):
+            return
+        lb = qtw.QLabel()
+        lb.setScaledContents(True)
+        lb.setPixmap(qtg.QPixmap.fromImage(img))
+        self.setItemWidget(self.image_items[idx], lb)

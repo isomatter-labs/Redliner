@@ -2,3 +2,4 @@ PyQt6
 pymupdf
 pyinstaller
 pillow
+numpy

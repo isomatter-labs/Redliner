@@ -1,19 +1,22 @@
 from PyQt6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
-from PyQt6.QtGui import QSurfaceFormat, QOpenGLContext, QOffscreenSurface
 
-from common import resource_path
-from common.render import RenderWidget
-import re
+import threading
+import logging
 
+from common.constants import VERSION_PATTERN
+from core.doc_man import DocMan
+from common.common import resource_path
+
+from common.temporary_file_manager import TemporaryFileManager
+from common.persistent_dict import PersistentDict
+from extensions.version_check import fetch_remote_version
 
 VERSION = "x.x.x"
-version_pattern = re.compile(r'\[(\d+\.\d+\.\d+)\]')
 with open(resource_path("CHANGELOG.md", None)) as f:
     for line in f:
-        match = version_pattern.search(line)
+        match = VERSION_PATTERN.search(line)
         if match:
             VERSION = match.group(1)
-
 
 try:
     import pyi_splash
@@ -23,25 +26,37 @@ except:
 
 
 class Redliner(qtw.QMainWindow):
+    signalParseUpdates = qtc.pyqtSignal(object)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle(f"Redliner v{VERSION}")
         self.resize(800, 600)
         self.setWindowIcon(qtg.QIcon(resource_path('icon.png')))
 
-        r = RenderWidget()
-
-        self.setCentralWidget(r)
+        w = DocMan()
+        _l = qtw.QHBoxLayout(w)
+        self.setCentralWidget(w)
         self.setAcceptDrops(True)
         self.show()
+        self.signalParseUpdates.connect(self.parse_updates)
+
+    def parse_updates(self, txt:str|Exception):
+        # TODO: implement new version notification
+        logging.info(str(txt))
 
 if __name__ == "__main__":
     import sys
-    app = qtw.QApplication(sys.argv)
-
-    _redliner = Redliner()
-    try:
-        pyi_splash.close()
-    except:
-        pass
-    app.exec()
+    logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
+    logging.info("Start")
+    with TemporaryFileManager() as tfm:
+        app = qtw.QApplication(sys.argv)
+        pd = PersistentDict(r"C:\Users\caleb\Desktop\dict.json")
+        _redliner = Redliner()
+        file_check_thread =threading.Thread(target=lambda:fetch_remote_version(_redliner.signalParseUpdates.emit))
+        qtc.QTimer.singleShot(1, file_check_thread.start)
+        try:
+            pyi_splash.close()
+        except:
+            pass
+        app.exec()
+        file_check_thread.join()
