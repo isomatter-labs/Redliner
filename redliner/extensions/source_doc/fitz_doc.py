@@ -16,7 +16,7 @@ class FitzDoc(SrcDoc):
     def page_count(self):
         return self._page_count
 
-    def preview(self, page) -> qtg.QIcon:
+    def _preview(self, page) -> qtg.QIcon:
         doc: fitz.Document = fitz.open(self.fp)
         page = doc.load_page(page)
         pix = page.get_pixmap(matrix=fitz.Matrix(PREVIEW_DPI / 72, PREVIEW_DPI / 72))
@@ -27,7 +27,7 @@ class FitzDoc(SrcDoc):
         doc.close()
         return qtg.QIcon(scaled)
 
-    def raster(self, page: int, dpi: float) -> np.ndarray:
+    def _raster(self, page: int, dpi: float) -> np.ndarray:
         doc: fitz.Document = fitz.open(self.fp)
         page = doc.load_page(page)
         pix = page.get_pixmap(matrix=fitz.Matrix(dpi / 72, dpi / 72))

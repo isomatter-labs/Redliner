@@ -1,6 +1,6 @@
 from PyQt6 import QtWidgets as qtw
 from common.persistent_dict import PersistentDict
-from common.ui import DocPreview
+from core.ui import DocPreview
 from extensions.fetcher import FETCHER_TYPES
 from extensions.source_doc import SrcDoc
 from .diff import diff
