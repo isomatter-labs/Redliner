@@ -1,3 +1,5 @@
+import os
+
 from PyQt6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
 
 import threading
@@ -50,7 +52,7 @@ if __name__ == "__main__":
     logging.info("Start")
     with TemporaryFileManager() as tfm:
         app = qtw.QApplication(sys.argv)
-        pd = PersistentDict(r"C:\Users\caleb\Desktop\dict.json")
+        pd = PersistentDict(os.path.join(os.getenv('APPDATA'),"redliner","redliner.json"))
         _redliner = Redliner()
         file_check_thread =threading.Thread(target=lambda:fetch_remote_version(_redliner.signalParseUpdates.emit))
         qtc.QTimer.singleShot(1, file_check_thread.start)

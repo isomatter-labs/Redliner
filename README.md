@@ -1,8 +1,9 @@
+
+# Redliner [0.0.2] - PDF (and more) Compare Tool
+
+EARLY DEVELOPMENT! Expect bugs and missing features. No version checking / updating exists yet. <br><br>
+Redliner allows for quickly identifying changes in text and visual documents by generating a per-pixel visual diff. <br> <br>
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/cjett)
-
-# Redliner - PDF (and more) Compare Tool
-
-Redliner allows for quickly identifying changes in text and visual documents by generating a per-pixel visual diff.
 
 ![Example Diff Screenshot](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/example.png)
 

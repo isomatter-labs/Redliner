@@ -1,6 +1,7 @@
 import copy
 import json
 import logging
+import os
 
 
 class PersistentDict(dict):
@@ -38,6 +39,7 @@ class PersistentDict(dict):
         self[k] = v
 
     def commit(self):
+        os.makedirs(os.path.split(self.path)[0], exist_ok=True)
         with open(self.path, 'w') as f:
             f.write(json.dumps(self, indent=2))
 
