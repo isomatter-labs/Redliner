@@ -1,8 +1,8 @@
 from PyQt6 import QtWidgets as qtw
-from common.persistent_dict import PersistentDict
-from core.ui import DocPreview
-from extensions.fetcher import FETCHER_TYPES
-from extensions.source_doc import SrcDoc
+from redliner.common.persistent_dict import PersistentDict
+from redliner.core.ui import DocPreview
+from redliner.extensions.fetcher import FETCHER_TYPES
+from redliner.extensions.source_doc import SrcDoc
 from .diff import diff
 import numpy as np
 from PyQt6 import QtCore as qtc, QtGui as qtg

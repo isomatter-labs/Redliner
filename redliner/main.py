@@ -3,13 +3,13 @@ from PyQt6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
 import threading
 import logging
 
-from common.constants import VERSION_PATTERN
-from core.doc_man import DocMan
-from common.common import resource_path
+from redliner.common.constants import VERSION_PATTERN
+from redliner.core.doc_man import DocMan
+from redliner.common.common import resource_path
 
-from common.temporary_file_manager import TemporaryFileManager
-from common.persistent_dict import PersistentDict
-from extensions.version_check import fetch_remote_version
+from redliner.common.temporary_file_manager import TemporaryFileManager
+from redliner.common.persistent_dict import PersistentDict
+from redliner.extensions.version_check import fetch_remote_version
 
 VERSION = "x.x.x"
 with open(resource_path("CHANGELOG.md", None)) as f:

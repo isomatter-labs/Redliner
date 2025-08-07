@@ -1,6 +1,6 @@
 from PyQt6 import QtWidgets as qtw, QtCore as qtc
-from common.constants import PREVIEW_SIZE
-from extensions.source_doc import SrcDoc
+from redliner.common.constants import PREVIEW_SIZE
+from redliner.extensions.source_doc import SrcDoc
 
 class DocPreview(qtw.QListWidget):
     signalSelectionChanged = qtc.pyqtSignal()

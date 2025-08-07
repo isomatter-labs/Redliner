@@ -1,5 +1,5 @@
 from . import Fetcher
-from common.ui import say
+from redliner.common.ui import say
 from PyQt6 import QtWidgets as qtw
 import traceback
 import os

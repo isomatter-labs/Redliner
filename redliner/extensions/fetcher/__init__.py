@@ -2,10 +2,10 @@ from PyQt6 import QtCore as qtc
 import logging
 import traceback
 
-from common.temporary_file_manager import  TemporaryFileManager
-from common.persistent_dict import PersistentDict
-from common.ui import say
-from extensions.source_doc import SrcDoc, SRC_DOC_TYPES
+from redliner.common.temporary_file_manager import  TemporaryFileManager
+from redliner.common.persistent_dict import PersistentDict
+from redliner.common.ui import say
+from redliner.extensions.source_doc import SrcDoc, SRC_DOC_TYPES
 
 class Fetcher(qtc.QObject):
     desc = ""

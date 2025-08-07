@@ -1,7 +1,7 @@
 from . import SrcDoc
 import fitz
 from PyQt6 import QtGui as qtg, QtCore as qtc
-from common.constants import PREVIEW_SIZE, PREVIEW_DPI
+from redliner.common.constants import PREVIEW_SIZE, PREVIEW_DPI
 import numpy as np
 
 class FitzDoc(SrcDoc):

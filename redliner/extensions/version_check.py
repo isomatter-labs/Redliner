@@ -1,6 +1,6 @@
 import requests
 
-from common.constants import REMOTE_CHANGELOG
+from redliner.common.constants import REMOTE_CHANGELOG
 
 
 def fetch_remote_version(cbk:callable):

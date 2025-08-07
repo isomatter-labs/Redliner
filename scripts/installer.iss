@@ -1,6 +1,6 @@
 [Setup]
 AppName=Redliner
-AppVersion=0.0.0
+AppVersion=0.0.1
 DefaultDirName={pf}\redliner
 DefaultGroupName=Redliner
 OutputDir=..\dist\installer
@@ -9,7 +9,7 @@ Compression=lzma
 SolidCompression=yes
 
 [Files]
-Source: "..\dist\onedirectory\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "..\dist\onedirectory\redliner\*"; DestDir: "{app}"; Flags: recursesubdirs
 
 [Icons]
 Name: "{group}\Redliner"; Filename: "{app}\redliner.exe"
