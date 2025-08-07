@@ -4,6 +4,9 @@ Redliner allows for quickly identifying changes in text and visual documents by 
 
 ![Example Diff Screenshot](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/example.png)
 
+## Installing
+- Grab the latest windows installer or portable EXE from [https://github.com/CJett/Redliner/releases](https://github.com/CJett/Redliner/releases)
+
 ## Building Locally
 - install python 3.13
 - (optional) install Inno Setup 6 for installer creation
