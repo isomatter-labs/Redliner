@@ -2,7 +2,7 @@
 
 Redliner allows for quickly identifying changes in text and visual documents by generating a per-pixel visual diff.
 
-![Example Diff Screenshot](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/example.png "Example Diff Screenshot")
+![Example Diff Screenshot](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/example.png)
 
 ## Installing
 todo
