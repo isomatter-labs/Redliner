@@ -2,7 +2,7 @@
 
 Redliner allows for quickly identifying changes in text and visual documents by generating a per-pixel visual diff.
 
-![Example Diff Screenshot](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/example.png0)
+![Example Diff Screenshot](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/example.png)
 
 ## Building Locally
 - install python 3.13
