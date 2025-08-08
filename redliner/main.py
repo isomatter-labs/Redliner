@@ -4,6 +4,8 @@ from PyQt6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
 
 import threading
 import logging
+from pathlib import Path
+import platform
 
 from redliner.common.constants import VERSION_PATTERN
 from redliner.core.doc_man import DocMan
@@ -52,7 +54,13 @@ if __name__ == "__main__":
     logging.info("Start")
     with TemporaryFileManager() as tfm:
         app = qtw.QApplication(sys.argv)
-        pd = PersistentDict(os.path.join(os.getenv('APPDATA'),"redliner","redliner.json"))
+        if platform.system() == 'Windows':
+            app_data_dir = Path.home() / "AppData" / "Roaming" / "redliner"
+        elif platform.system() == 'Darwin':  # macOS
+            app_data_dir = Path.home() / "Library" / "Application Support" / "redliner"
+        else:  # Linux and other Unix-like systems
+            app_data_dir = Path.home() / ".local" / "share" / "redliner"
+        pd = PersistentDict(app_data_dir / "redliner.json")
         _redliner = Redliner()
         file_check_thread =threading.Thread(target=lambda:fetch_remote_version(_redliner.signalParseUpdates.emit))
         qtc.QTimer.singleShot(1, file_check_thread.start)

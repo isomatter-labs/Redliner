@@ -12,7 +12,7 @@ class PersistentDict(dict):
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, path: str = ""):
+    def __init__(self, path: os.PathLike | str = ""):
         if not hasattr(self, '_initialized'):  # Prevent re-initialization
             self.defaults = {}
             self.path = path
