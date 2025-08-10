@@ -4,12 +4,12 @@ import time
 from PIL import Image
 from PyQt6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
 
-from common.common import resource_path
-from extensions.feature import Feature
-from extensions.source_doc import SrcPage, FitzDoc
+from redliner.common.common import resource_path
+from redliner.extensions.feature import Feature
+from redliner.extensions.source_doc import SrcPage, FitzDoc
 import moderngl
 import numpy as np
-from common.constants import DIFF_VERT, DIFF_FRAG, BG_FRAG, BG_VERT
+from redliner.common.constants import DIFF_VERT, DIFF_FRAG, BG_FRAG, BG_VERT
 
 
 class RenderPage:

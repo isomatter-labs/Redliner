@@ -2,7 +2,7 @@ from PyQt6 import QtCore as qtc
 import numpy as np
 import re
 
-from common.common import resource_path
+from redliner.common.common import resource_path
 
 PREVIEW_DPI = 10
 PREVIEW_SIZE = qtc.QSize(128, 128)

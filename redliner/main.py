@@ -5,8 +5,8 @@ from PyQt6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
 import threading
 import logging
 
-from common.constants import REMOTE
-from common.ui import say
+from redliner.common.constants import REMOTE
+from redliner.common.ui import say
 from redliner.common.constants import VERSION_PATTERN
 from redliner.core.doc_man import DocMan
 from redliner.common.common import resource_path

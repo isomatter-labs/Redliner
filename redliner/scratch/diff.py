@@ -1,6 +1,6 @@
 import numpy as np
 
-from extensions.source_doc import SrcPage
+from redliner.extensions.source_doc import SrcPage
 
 
 # from numba import njit
