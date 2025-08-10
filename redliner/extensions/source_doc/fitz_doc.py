@@ -1,4 +1,4 @@
-from . import SrcDoc
+from . import SrcDoc, TextBox
 import fitz
 from PyQt6 import QtGui as qtg, QtCore as qtc
 from redliner.common.constants import PREVIEW_SIZE, PREVIEW_DPI
@@ -33,3 +33,17 @@ class FitzDoc(SrcDoc):
         pix = page.get_pixmap(matrix=fitz.Matrix(dpi / 72, dpi / 72))
         doc.close()
         return np.frombuffer(pix.samples, dtype=np.uint8).reshape((pix.height, pix.width, pix.n))
+
+    def _text(self, page:int):
+        doc: fitz.Document = fitz.open(self.fp)
+        page = doc.load_page(page)
+        ret = []
+        for t in page.get_text("words"):
+            x0, y0, x1, y1, text, *_ = t
+            w = x1-x0
+            h = y1-y0
+            xc = (x0+x1)/2
+            yc = (y0+y1)/2
+            ret.append(TextBox(xc, yc, w, h, 0, text))
+        doc.close()
+        return ret

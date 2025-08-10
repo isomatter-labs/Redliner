@@ -1,17 +1,24 @@
 import numpy as np
+
+from extensions.source_doc import SrcPage
+
+
 # from numba import njit
 # @njit
 # todo: rework diff command to work with Numba
-def diff(lhs: np.ndarray,
-         rhs: np.ndarray,
+def diff(lhs: SrcPage,
+         rhs: SrcPage,
          scale_lo: int = 0,
          scale_hi: int = 255,
          old_color=(0.7, 0.3, 0),
          new_color=(0, 0.3, 0.6),
          hilight_radius=4,
          hilight_color=(0.9, 0.9, 0)) -> np.ndarray:
-    canv_h = max(lhs.shape[0], rhs.shape[0])
-    canv_w = max(lhs.shape[1], rhs.shape[1])
+
+    canv_h = max(lhs.height, rhs.height)
+    canv_w = max(lhs.width, rhs.width)
+    lhs = lhs.raster
+    rhs = rhs.raster
     canv = 255 * np.ones((canv_h, canv_w, 3))
     lh_gray = lhs[..., 0] * 0.2989 + lhs[..., 1] * 0.5870 + lhs[..., 2] * 0.1140
     rh_gray = rhs[..., 0] * 0.2989 + rhs[..., 1] * 0.5870 + rhs[..., 2] * 0.1140

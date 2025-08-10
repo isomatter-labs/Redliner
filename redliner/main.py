@@ -5,6 +5,8 @@ from PyQt6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
 import threading
 import logging
 
+from common.constants import REMOTE
+from common.ui import say
 from redliner.common.constants import VERSION_PATTERN
 from redliner.core.doc_man import DocMan
 from redliner.common.common import resource_path
@@ -14,11 +16,24 @@ from redliner.common.persistent_dict import PersistentDict
 from redliner.extensions.version_check import fetch_remote_version
 
 VERSION = "x.x.x"
-with open(resource_path("CHANGELOG.md", None)) as f:
-    for line in f:
+
+def get_version_number(changelog:str):
+    for line in changelog.split("\n"):
         match = VERSION_PATTERN.search(line)
         if match:
-            VERSION = match.group(1)
+            return match.group(1)
+
+    return "0.0.0"
+
+def parse_version_number(version:str) -> tuple:
+    try:
+        major, minor, revision = version.split(".")
+        return (int(major), int(minor), int(revision))
+    except:
+        return (0,0,0)
+
+with open(resource_path("CHANGELOG.md", None)) as f:
+    VERSION = get_version_number(f.read())
 
 try:
     import pyi_splash
@@ -36,15 +51,21 @@ class Redliner(qtw.QMainWindow):
         self.setWindowIcon(qtg.QIcon(resource_path('icon.png')))
 
         w = DocMan()
-        _l = qtw.QHBoxLayout(w)
         self.setCentralWidget(w)
         self.setAcceptDrops(True)
         self.show()
         self.signalParseUpdates.connect(self.parse_updates)
 
     def parse_updates(self, txt:str|Exception):
-        # TODO: implement new version notification
-        logging.info(str(txt))
+        remote_ver = get_version_number(txt)
+        logging.info(f"Remote is version {remote_ver}")
+        loc = parse_version_number(VERSION)
+        remote = parse_version_number(remote_ver)
+        for i in range(3):
+            if remote[i] > loc[i]:
+                say(f"There's a new version of Redliner! Local is {VERSION}, remote is {remote_ver}.\n\n{REMOTE}")
+            if remote[i] < loc[i]:
+                break
 
 if __name__ == "__main__":
     import sys
@@ -55,7 +76,7 @@ if __name__ == "__main__":
         pd = PersistentDict(os.path.join(os.getenv('APPDATA'),"redliner","redliner.json"))
         _redliner = Redliner()
         file_check_thread =threading.Thread(target=lambda:fetch_remote_version(_redliner.signalParseUpdates.emit))
-        qtc.QTimer.singleShot(1, file_check_thread.start)
+        qtc.QTimer.singleShot(1000, file_check_thread.start)
         try:
             pyi_splash.close()
         except:

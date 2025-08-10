@@ -1,6 +1,6 @@
 [Setup]
 AppName=Redliner
-AppVersion=0.0.1
+AppVersion=0.1.0
 DefaultDirName={pf}\redliner
 DefaultGroupName=Redliner
 OutputDir=..\dist\installer

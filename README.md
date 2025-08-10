@@ -21,15 +21,18 @@ Redliner allows for quickly identifying changes in text and visual documents by 
 ## Todo
 - ### V1
 - [X] Upload to GitHub
-- [ ] Finish initial documentation
 - [X] Develop installation / distribution procedure
+- [X] Switch to OpenGL
+- [X] Add update check button / built-in update installation
+  - [ ] Make new version notif only pop up once
+- [ ] Finish initial documentation
 - [ ] Implement dynamic canvas
 - [ ] Implement export document composition
 - ### V2
 - [ ] Implement annotation tools
 - [ ] Implement text-aware search and PDF generation
 - [ ] Set up Linux and MacOS build scripts
-- [ ] Add update check button / built-in update installation
+- [ ] Add background rasterization for faster page loads
 
 
 ## Extending Redliner for your company / workflow

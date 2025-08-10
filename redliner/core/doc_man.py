@@ -3,17 +3,101 @@ from redliner.common.persistent_dict import PersistentDict
 from redliner.core.ui import DocPreview
 from redliner.extensions.fetcher import FETCHER_TYPES
 from redliner.extensions.source_doc import SrcDoc
-from .diff import diff
-import numpy as np
 from PyQt6 import QtCore as qtc, QtGui as qtg
+
+from .render import Renderer, RenderPage
+
+
+
+def rgb_to_hex(red: int, green: int, blue: int, alpha: int | None = None) -> str:
+    return f"#{hex(red)[2:].zfill(2)}{hex(green)[2:].zfill(2)}{hex(blue)[2:].zfill(2)} {alpha if alpha is not None else ''}"
+
+def hex_to_rgb(val:str) -> tuple:
+    val = val.strip().lower()
+    if val[0] == "#":
+        val = val[1:]
+    r1, r2, g1, g2, b1, b2 = val
+    return (int(r1+r2,16), int(g1+g2,16), int(b1+b2,16))
+
+class ColorButton(qtw.QPushButton):
+    signalColorChanged = qtc.pyqtSignal(str)
+
+    def __init__(self, hex):
+        super().__init__()
+        self.hx = hex
+        self.setStyleSheet(f"background-color:{self.hx}")
+        self.setText(self.hx)
+        self.clicked.connect(self.color_pick)
+
+    def color_pick(self):
+        color_pick = qtw.QColorDialog.getColor(qtg.QColor(self.hx))
+        r, g, b, a = color_pick.getRgb()
+        self.hx = rgb_to_hex(r, g, b)
+        self.setStyleSheet(f"background-color:{self.hx}")
+        self.setText(self.hx)
+        self.signalColorChanged.emit(self.hx)
+
+
+class SettingsWidget(qtw.QWidget):
+    signalSettingsChanged = qtc.pyqtSignal()
+    def __init__(self, items:list, width:int):
+        super().__init__()
+        self.pd = PersistentDict()
+        self._l = qtw.QVBoxLayout(self)
+        self._l.setContentsMargins(0,0,0,0)
+        self._l.setSpacing(2)
+        self.setFixedWidth(width)
+        tgt_l = self._l
+        for row in items:
+            if len(row) == 1:
+                gb = qtw.QGroupBox(row[0])
+                gb_l = qtw.QVBoxLayout(gb)
+                self._l.addWidget(gb)
+                tgt_l = gb_l
+            else:
+                _type, key, name, *args = row
+                val = self.pd[key]
+                _r = qtw.QWidget()
+                _l = qtw.QHBoxLayout(_r)
+                _l.setContentsMargins(0,0,0,0)
+                _l.setSpacing(2)
+                lb = qtw.QLabel(name)
+                _l.addWidget(lb)
+                lb.setSizePolicy(qtw.QSizePolicy.Policy.Fixed, qtw.QSizePolicy.Policy.Fixed)
+                if _type == "bool":
+                    w = qtw.QCheckBox()
+                    w.setChecked(val)
+                    w.stateChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.isChecked()))
+                if _type == "spin":
+                    w = qtw.QSpinBox()
+                    w.setRange(*args)
+                    w.setValue(val)
+                    w.valueChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.value()))
+                if _type == "color":
+                    w = ColorButton(val)
+                    w.signalColorChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.hx))
+                _l.addWidget(w)
+                tgt_l.addWidget(_r)
+        self._l.addStretch()
+
+    def set(self, key, value):
+        self.pd[key] = value
+        self.signalSettingsChanged.emit()
+
+    def __getitem__(self, key):
+        return self.pd[key]
 
 class DocMan(qtw.QWidget):
     def __init__(self):
         super().__init__()
         self.pd = PersistentDict()
-        self.pd.default("scale_lo", 0)
-        self.pd.default("scale_hi", 255)
+        self.pd.default("highlighter_en", True)
+        self.pd.default("highlighter_size", 4)
+        self.pd.default("highlighter_sensitivity", 100)
         self.pd.default("dpi", 72)
+        self.pd.default("removed_color", "#D0A000")
+        self.pd.default("added_color", "#00A0D0")
+        self.pd.default("highlighter_color", "#F0F000")
         self.lhs = None
         self.rhs = None
         self.click_side = "L"
@@ -40,30 +124,20 @@ class DocMan(qtw.QWidget):
         lhl.addWidget(self.lhp)
         rhl.addWidget(self.rhp)
 
-        w_settings = qtw.QWidget()
-        _l.addWidget(w_settings)
-        l_s = qtw.QGridLayout(w_settings)
-        self.sb_dpi = qtw.QSpinBox()
-        self.sb_dpi.setRange(0, 10000)
-        self.sb_dpi.setValue(self.pd["dpi"])
-        self.sb_dpi.valueChanged.connect(self.regen)
-        l_s.addWidget(qtw.QLabel("DPI"), 0, 0)
-        l_s.addWidget(self.sb_dpi, 0, 1)
-        self.sb_lo = qtw.QSpinBox()
-        self.sb_lo.setRange(0, 254)
-        self.sb_lo.setValue(self.pd["scale_lo"])
-        self.sb_lo.valueChanged.connect(self.regen)
-        l_s.addWidget(qtw.QLabel("Lower Thresh"), 1, 0)
-        l_s.addWidget(self.sb_lo, 1, 1)
-
-        self.sb_hi = qtw.QSpinBox()
-        self.sb_hi.setRange(1, 255)
-        self.sb_hi.setValue(self.pd["scale_hi"])
-        self.sb_hi.valueChanged.connect(self.regen)
-        l_s.addWidget(qtw.QLabel("Upper Thresh"), 2, 0)
-        l_s.addWidget(self.sb_hi, 2, 1)
-        l_s.setRowStretch(3, 1)
-        w_settings.setFixedWidth(196)
+        self.settings = SettingsWidget([
+            ["Render"],
+            ["spin", "dpi", "DPI", 0, 10000],
+            ["color", "removed_color", "Removed Color"],
+            ["color", "added_color", "Added Color"],
+            ["Highlighter"],
+            ["bool", "highlighter_en", "Enabled"],
+            ["spin", "highlighter_size", "Size (px)", 0, 128],
+            ["spin", "highlighter_sensitivity", "Sensitivity", 0, 100],
+            ["color", "highlighter_color", "Highlight Color"]
+        ], 196)
+        self.settings.signalSettingsChanged.connect(self.regen)
+        _l.addWidget(self.settings)
+        self.renderer = Renderer()
         self.preview = qtw.QLabel()
         self.preview.setScaledContents(True)
         _l.addWidget(self.preview)
@@ -104,41 +178,50 @@ class DocMan(qtw.QWidget):
             self.rhp.set_doc(doc)
 
     def regen(self):
-        scale_lo = self.sb_lo.value()
-        scale_hi = self.sb_hi.value()
-        dpi = self.sb_dpi.value()
-        if scale_hi <= scale_lo:
-            if scale_lo != self.pd["scale_lo"]:
-                # low scale was changed
-                scale_hi = scale_lo + 1
-                self.sb_hi.setValue(scale_hi)
-            else:
-                scale_lo = scale_hi - 1
-                self.sb_lo.setValue(scale_lo)
-        self.pd.update({
-            "dpi": dpi,
-            "scale_lo": scale_lo,
-            "scale_hi": scale_hi
-        })
+
         lh_page = self.lhp.selectedIndexes()
-        lh_data = None
-        rh_data = None
+        rh_page = self.rhp.selectedIndexes()
+        render_page = RenderPage()
         if lh_page:
             lh_page = lh_page[0].row()
-            lh_data = self.lhs.raster(lh_page, dpi)
-        rh_page = self.rhp.selectedIndexes()
+            render_page.lhs = self.lhs.page(lh_page, self.settings["dpi"])
         if rh_page:
             rh_page = rh_page[0].row()
-            rh_data = self.rhs.raster(rh_page, dpi)
-        if lh_data is not None:
-            if rh_data is not None:
-                im = diff(lh_data, rh_data, scale_lo, scale_hi)
-            else:
-                im = lh_data
-        elif rh_data is not None:
-            im = rh_data
-        else:
-            im = np.full((256, 256, 3), (0, 0, 255), dtype=np.uint8)
-        image = qtg.QImage(im, im.shape[1], im.shape[0], im.strides[0], qtg.QImage.Format.Format_RGB888)
-        self.preview.setPixmap(qtg.QPixmap.fromImage(image))
+            render_page.rhs = self.rhs.page(rh_page, self.settings["dpi"])
+        self.renderer.set_page(render_page)
+        self.redraw()
+
+    def resizeEvent(self, a0):
+        super().resizeEvent(a0)
+        self.redraw()
+
+    def redraw(self, lh=True, rh=True):
+
+        px = self.renderer.render(hex_to_rgb(self.settings["added_color"]),
+                                  hex_to_rgb(self.settings["removed_color"]),
+                                  hex_to_rgb(self.settings["highlighter_color"]),
+                                  self.settings["highlighter_en"],
+                                  1-self.settings["highlighter_sensitivity"]/100,
+                                  self.settings["highlighter_size"],
+                                  0,
+                                  0,
+                                  1,
+                                  0,
+                                  lh,
+                                  rh,
+                                  self.preview.width(),
+                                  self.preview.height())
+        self.preview.setPixmap(qtg.QPixmap.fromImage(px))
         self.preview.setMinimumSize(qtc.QSize(64, 64))
+
+    def keyPressEvent(self, a0):
+        if a0.key() == qtc.Qt.Key.Key_Left:
+            self.redraw(rh=False)
+        if a0.key() == qtc.Qt.Key.Key_Right:
+            self.redraw(lh=False)
+        super().keyPressEvent(a0)
+
+    def keyReleaseEvent(self, a0):
+        self.redraw()
+
+
