@@ -1,11 +1,12 @@
 
-# Redliner [0.1.0] - PDF (and more) Compare Tool
+# Redliner [0.2.0] - PDF (and more) Compare Tool
 
 EARLY DEVELOPMENT! Expect bugs and missing features. No version checking / updating exists yet. <br><br>
 Redliner allows for quickly identifying changes in text and visual documents by generating a per-pixel visual diff. <br> <br>
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/cjett)
 
-![Example Diff Screenshot](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/example.png)
+![Example Diff Screenshot](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/doc/example.png)
+![Example Schematic Diff](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/doc/example_scm.png)
 
 ## Installing
 - Grab the latest windows installer or portable EXE from [https://github.com/CJett/Redliner/releases](https://github.com/CJett/Redliner/releases)
@@ -28,6 +29,7 @@ Redliner allows for quickly identifying changes in text and visual documents by 
 - [ ] Finish initial documentation
 - [ ] Implement dynamic canvas
 - [ ] Implement export document composition
+- [ ] Add CLI interface
 - ### V2
 - [ ] Implement annotation tools
 - [ ] Implement text-aware search and PDF generation

@@ -4,6 +4,8 @@ import time
 from PIL import Image
 from PyQt6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
 
+from redliner.common.persistent_dict import PersistentDict
+from redliner.common import hex_to_rgb
 from redliner.common.common import resource_path
 from redliner.extensions.feature import Feature
 from redliner.extensions.source_doc import SrcPage, FitzDoc
@@ -37,7 +39,8 @@ class RenderPage:
 
 class Renderer:
     def __init__(self):
-        self.ctx = moderngl.create_standalone_context()
+
+        self.ctx = moderngl.create_standalone_context(samples=4)
         self.prog_diff = self.ctx.program(
             vertex_shader=DIFF_VERT,
             fragment_shader=DIFF_FRAG,
@@ -167,51 +170,101 @@ class Renderer:
 
         return qim
 
-
-
 class RenderWidget(qtw.QLabel):
-    def __init__(self):
+    def __init__(self, parent = None):
+        self.parent = parent
         super().__init__()
-        self.ctx = moderngl.create_standalone_context()
-        self.prog = self.ctx.program(
-            vertex_shader=DIFF_VERT,
-            fragment_shader=DIFF_FRAG,
-        )
-        self.fbo:moderngl.Framebuffer = self.ctx.simple_framebuffer((self.width(), self.height()))
-        self.i = 0
-        self.lt = time.time()
+        self.pd = PersistentDict()
+        self.renderer = Renderer()
         self.x = 0
-        self.setFocusPolicy(qtc.Qt.FocusPolicy.StrongFocus)
         self.y = 0
+        self.scale = 1
+        self.theta = 0
+        self.mouse_stack = []
+        self.mouse_button = qtc.Qt.MouseButton.NoButton
+        self.mouse_hover = 0,0
+        self.setFocusPolicy(qtc.Qt.FocusPolicy.StrongFocus)
+        self.setMouseTracking(True)
 
     def resizeEvent(self, a0):
         super().resizeEvent(a0)
-        self.fbo = self.ctx.simple_framebuffer((self.width(), self.height()))
+        self.home()
+
+    def keyPressEvent(self, a0):
+        if a0.key() == qtc.Qt.Key.Key_Left:
+            self.redraw(rh=False)
+        if a0.key() == qtc.Qt.Key.Key_Right:
+            self.redraw(lh=False)
+        self.parent.keyPressEvent(a0)
+
+    def keyReleaseEvent(self, a0):
         self.redraw()
 
-    def keyPressEvent(self, ev):
-        print('event')
-        if ev.key() == qtc.Qt.Key.Key_Space:
-            self.x = random.random()
-            self.y = random.random()
-            print(self.x, self.y)
+    def set_page(self, page:RenderPage):
+        if self.renderer.page.lhs is None and self.renderer.page.rhs is None:
+            self.renderer.set_page(page)
+            self.home()
+        else:
+            self.renderer.set_page(page)
             self.redraw()
 
-    def redraw(self):
-        ...
+    def wheelEvent(self, a0):
+        # the idea is that the point at mx, my should not move on the screen after scrolling.
+        cx, cy = self.mouse_coords_to_canvas(*self.mouse_hover)
+        self.scale *= (1+a0.angleDelta().y()/500)
+        if self.scale < 0.01:
+            self.scale = 0.01
+        cx2, cy2 = self.mouse_coords_to_canvas(*self.mouse_hover)
+        self.x += cx2-cx
+        self.y += cy2-cy
+        self.redraw()
+
+    def mouse_coords_to_canvas(self, mx:float, my:float) -> tuple:
+        return mx/self.scale-self.x, my/self.scale-self.y
+
+    def canvas_to_mouse_coords(self, cx:float, cy:float) -> tuple:
+        return (cx+self.x)*self.scale, (cy+self.y)*self.scale
 
 
-if __name__ == "__main__":
-    doc_lhs = FitzDoc("lhs", r"C:\Users\caleb\Documents\lhs.pdf")
-    doc_rhs = FitzDoc("rhs", r"C:\Users\caleb\Documents\rhs.pdf")
+    def mousePressEvent(self, ev):
+        self.mouse_button = ev.button()
+        self.mouse_stack = [[ev.pos().x(), ev.pos().y()]]
 
-    page = RenderPage()
-    page.lhs = doc_lhs.page(0, 72)
-    page.rhs = doc_rhs.page(0, 72)
+    def mouseMoveEvent(self, ev):
+        if self.mouse_button == qtc.Qt.MouseButton.MiddleButton or self.mouse_button == qtc.Qt.MouseButton.LeftButton:
+            # pan
+            dx, dy = ev.pos().x()-self.mouse_stack[-1][0], ev.pos().y()-self.mouse_stack[-1][1]
+            self.x += dx/self.scale
+            self.y += dy/self.scale
+            self.redraw()
+            print(self.x, self.y)
+        if self.mouse_button != qtc.Qt.MouseButton.NoButton:
+            self.mouse_stack.append([ev.pos().x(), ev.pos().y()])
+        self.mouse_hover = ev.pos().x(), ev.pos().y()
 
-    renderer = Renderer()
-    renderer.set_page(page)
-    im = renderer.render(0, 0, 1, 0, 640, 480)
-    im.save("out.png")
-    import webbrowser
-    webbrowser.open("out.png")
+    def home(self):
+        self.scale = min(self.width()/(self.renderer.page.width or 1), self.height()/(self.renderer.page.height or 1))
+        self.x = 0
+        self.y = 0
+        self.redraw()
+
+    def mouseReleaseEvent(self, ev):
+        self.mouse_button = qtc.Qt.MouseButton.NoButton
+
+    def redraw(self, lh=True, rh=True):
+        px = self.renderer.render(hex_to_rgb(self.pd["added_color"]),
+                                  hex_to_rgb(self.pd["removed_color"]),
+                                  hex_to_rgb(self.pd["highlighter_color"]),
+                                  self.pd["highlighter_en"],
+                                  1-self.pd["highlighter_sensitivity"]/100,
+                                  self.pd["highlighter_size"],
+                                  self.x,
+                                  self.y,
+                                  self.scale,
+                                  self.theta,
+                                  lh,
+                                  rh,
+                                  self.width(),
+                                  self.height())
+        self.setPixmap(qtg.QPixmap.fromImage(px))
+        self.setMinimumSize(qtc.QSize(64, 64))

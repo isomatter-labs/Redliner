@@ -5,7 +5,8 @@ from redliner.extensions.source_doc import SrcDoc
 class DocPreview(qtw.QListWidget):
     signalSelectionChanged = qtc.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, parent):
+        self.parent = parent
         super().__init__()
         self.setUniformItemSizes(True)
         self.setIconSize(PREVIEW_SIZE)
@@ -21,3 +22,9 @@ class DocPreview(qtw.QListWidget):
     def selectionChanged(self, selected, deselected):
         self.signalSelectionChanged.emit()
         return super().selectionChanged(selected, deselected)
+
+    def keyPressEvent(self, e):
+        if e.key() in [qtc.Qt.Key.Key_Escape, qtc.Qt.Key.Key_PageUp, qtc.Qt.Key.Key_PageDown, qtc.Qt.Key.Key_Home]:
+            self.parent.keyPressEvent(e)
+        else:
+            super().keyPressEvent(e)

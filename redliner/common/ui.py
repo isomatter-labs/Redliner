@@ -1,4 +1,8 @@
-from PyQt6 import QtWidgets as qtw
+from PyQt6 import QtWidgets as qtw, QtCore as qtc, QtGui as qtg
+
+from redliner.common.persistent_dict import PersistentDict
+from redliner.common import rgb_to_hex
+
 
 def say(message: str, title=""):
     msg = qtw.QMessageBox()
@@ -12,3 +16,72 @@ def get_text(message: str = "", title: str = "", start_string: str = ""):
     if ok:
         return text
     return None
+
+
+class ColorButton(qtw.QPushButton):
+    signalColorChanged = qtc.pyqtSignal(str)
+
+    def __init__(self, hex):
+        super().__init__()
+        self.hx = hex
+        self.setStyleSheet(f"background-color:{self.hx}")
+        self.setText(self.hx)
+        self.clicked.connect(self.color_pick)
+
+    def color_pick(self):
+        color_pick = qtw.QColorDialog.getColor(qtg.QColor(self.hx))
+        r, g, b, a = color_pick.getRgb()
+        self.hx = rgb_to_hex(r, g, b)
+        self.setStyleSheet(f"background-color:{self.hx}")
+        self.setText(self.hx)
+        self.signalColorChanged.emit(self.hx)
+
+
+class SettingsWidget(qtw.QWidget):
+    signalSettingsChanged = qtc.pyqtSignal()
+    def __init__(self, items:list, width:int):
+        super().__init__()
+        self.pd = PersistentDict()
+        self._l = qtw.QVBoxLayout(self)
+        self._l.setContentsMargins(0,0,0,0)
+        self._l.setSpacing(2)
+        self.setFixedWidth(width)
+        tgt_l = self._l
+        for row in items:
+            if len(row) == 1:
+                gb = qtw.QGroupBox(row[0])
+                gb_l = qtw.QVBoxLayout(gb)
+                self._l.addWidget(gb)
+                tgt_l = gb_l
+            else:
+                _type, key, name, *args = row
+                val = self.pd[key]
+                _r = qtw.QWidget()
+                _l = qtw.QHBoxLayout(_r)
+                _l.setContentsMargins(0,0,0,0)
+                _l.setSpacing(2)
+                lb = qtw.QLabel(name)
+                _l.addWidget(lb)
+                lb.setSizePolicy(qtw.QSizePolicy.Policy.Fixed, qtw.QSizePolicy.Policy.Fixed)
+                if _type == "bool":
+                    w = qtw.QCheckBox()
+                    w.setChecked(val)
+                    w.stateChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.isChecked()))
+                if _type == "spin":
+                    w = qtw.QSpinBox()
+                    w.setRange(*args)
+                    w.setValue(val)
+                    w.valueChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.value()))
+                if _type == "color":
+                    w = ColorButton(val)
+                    w.signalColorChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.hx))
+                _l.addWidget(w)
+                tgt_l.addWidget(_r)
+        self._l.addStretch()
+
+    def set(self, key, value):
+        self.pd[key] = value
+        self.signalSettingsChanged.emit()
+
+    def __getitem__(self, key):
+        return self.pd[key]

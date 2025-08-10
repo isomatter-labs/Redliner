@@ -1,91 +1,14 @@
 from PyQt6 import QtWidgets as qtw
 from redliner.common.persistent_dict import PersistentDict
+from redliner.common.ui import SettingsWidget
+from redliner.common import hex_to_rgb
 from redliner.core.ui import DocPreview
 from redliner.extensions.fetcher import FETCHER_TYPES
 from redliner.extensions.source_doc import SrcDoc
 from PyQt6 import QtCore as qtc, QtGui as qtg
 
-from .render import Renderer, RenderPage
+from .render import RenderPage, RenderWidget
 
-
-
-def rgb_to_hex(red: int, green: int, blue: int, alpha: int | None = None) -> str:
-    return f"#{hex(red)[2:].zfill(2)}{hex(green)[2:].zfill(2)}{hex(blue)[2:].zfill(2)} {alpha if alpha is not None else ''}"
-
-def hex_to_rgb(val:str) -> tuple:
-    val = val.strip().lower()
-    if val[0] == "#":
-        val = val[1:]
-    r1, r2, g1, g2, b1, b2 = val
-    return (int(r1+r2,16), int(g1+g2,16), int(b1+b2,16))
-
-class ColorButton(qtw.QPushButton):
-    signalColorChanged = qtc.pyqtSignal(str)
-
-    def __init__(self, hex):
-        super().__init__()
-        self.hx = hex
-        self.setStyleSheet(f"background-color:{self.hx}")
-        self.setText(self.hx)
-        self.clicked.connect(self.color_pick)
-
-    def color_pick(self):
-        color_pick = qtw.QColorDialog.getColor(qtg.QColor(self.hx))
-        r, g, b, a = color_pick.getRgb()
-        self.hx = rgb_to_hex(r, g, b)
-        self.setStyleSheet(f"background-color:{self.hx}")
-        self.setText(self.hx)
-        self.signalColorChanged.emit(self.hx)
-
-
-class SettingsWidget(qtw.QWidget):
-    signalSettingsChanged = qtc.pyqtSignal()
-    def __init__(self, items:list, width:int):
-        super().__init__()
-        self.pd = PersistentDict()
-        self._l = qtw.QVBoxLayout(self)
-        self._l.setContentsMargins(0,0,0,0)
-        self._l.setSpacing(2)
-        self.setFixedWidth(width)
-        tgt_l = self._l
-        for row in items:
-            if len(row) == 1:
-                gb = qtw.QGroupBox(row[0])
-                gb_l = qtw.QVBoxLayout(gb)
-                self._l.addWidget(gb)
-                tgt_l = gb_l
-            else:
-                _type, key, name, *args = row
-                val = self.pd[key]
-                _r = qtw.QWidget()
-                _l = qtw.QHBoxLayout(_r)
-                _l.setContentsMargins(0,0,0,0)
-                _l.setSpacing(2)
-                lb = qtw.QLabel(name)
-                _l.addWidget(lb)
-                lb.setSizePolicy(qtw.QSizePolicy.Policy.Fixed, qtw.QSizePolicy.Policy.Fixed)
-                if _type == "bool":
-                    w = qtw.QCheckBox()
-                    w.setChecked(val)
-                    w.stateChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.isChecked()))
-                if _type == "spin":
-                    w = qtw.QSpinBox()
-                    w.setRange(*args)
-                    w.setValue(val)
-                    w.valueChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.value()))
-                if _type == "color":
-                    w = ColorButton(val)
-                    w.signalColorChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.hx))
-                _l.addWidget(w)
-                tgt_l.addWidget(_r)
-        self._l.addStretch()
-
-    def set(self, key, value):
-        self.pd[key] = value
-        self.signalSettingsChanged.emit()
-
-    def __getitem__(self, key):
-        return self.pd[key]
 
 class DocMan(qtw.QWidget):
     def __init__(self):
@@ -117,8 +40,8 @@ class DocMan(qtw.QWidget):
         rhl.setSpacing(2)
         _l.addWidget(lhw)
         _l.addWidget(rhw)
-        self.lhp = DocPreview()
-        self.rhp = DocPreview()
+        self.lhp = DocPreview(self)
+        self.rhp = DocPreview(self)
         self.lhp.signalSelectionChanged.connect(self.regen)
         self.rhp.signalSelectionChanged.connect(self.regen)
         lhl.addWidget(self.lhp)
@@ -137,9 +60,7 @@ class DocMan(qtw.QWidget):
         ], 196)
         self.settings.signalSettingsChanged.connect(self.regen)
         _l.addWidget(self.settings)
-        self.renderer = Renderer()
-        self.preview = qtw.QLabel()
-        self.preview.setScaledContents(True)
+        self.preview = RenderWidget(self)
         _l.addWidget(self.preview)
         self.fetchers = {f.desc: f for f in [F() for F in FETCHER_TYPES]}
 
@@ -188,40 +109,62 @@ class DocMan(qtw.QWidget):
         if rh_page:
             rh_page = rh_page[0].row()
             render_page.rhs = self.rhs.page(rh_page, self.settings["dpi"])
-        self.renderer.set_page(render_page)
-        self.redraw()
-
-    def resizeEvent(self, a0):
-        super().resizeEvent(a0)
-        self.redraw()
-
-    def redraw(self, lh=True, rh=True):
-
-        px = self.renderer.render(hex_to_rgb(self.settings["added_color"]),
-                                  hex_to_rgb(self.settings["removed_color"]),
-                                  hex_to_rgb(self.settings["highlighter_color"]),
-                                  self.settings["highlighter_en"],
-                                  1-self.settings["highlighter_sensitivity"]/100,
-                                  self.settings["highlighter_size"],
-                                  0,
-                                  0,
-                                  1,
-                                  0,
-                                  lh,
-                                  rh,
-                                  self.preview.width(),
-                                  self.preview.height())
-        self.preview.setPixmap(qtg.QPixmap.fromImage(px))
-        self.preview.setMinimumSize(qtc.QSize(64, 64))
+        self.preview.set_page(render_page)
 
     def keyPressEvent(self, a0):
-        if a0.key() == qtc.Qt.Key.Key_Left:
-            self.redraw(rh=False)
-        if a0.key() == qtc.Qt.Key.Key_Right:
-            self.redraw(lh=False)
-        super().keyPressEvent(a0)
+        if a0.key() == qtc.Qt.Key.Key_Home:
+            self.preview.home()
+        elif a0.key() == qtc.Qt.Key.Key_PageDown:
+            if self.lhp.count():
+                sel = self.lhp.selectedIndexes()
+                if sel:
+                    idx = sel[0].row()
+                    idx += 1
+                    if idx > self.lhp.count()-1:
+                        idx = 0
+                else:
+                    idx = 0
+                self.lhp.item(idx).setSelected(True)
+            if self.rhp.count():
+                sel = self.rhp.selectedIndexes()
+                if sel:
+                    idx = sel[0].row()
+                    idx += 1
+                    if idx > self.rhp.count()-1:
+                        idx = 0
+                else:
+                    idx = 0
+                self.rhp.item(idx).setSelected(True)
 
-    def keyReleaseEvent(self, a0):
-        self.redraw()
+        elif a0.key() == qtc.Qt.Key.Key_PageUp:
+            if self.lhp.count():
+                sel = self.lhp.selectedIndexes()
+                if sel:
+                    idx = sel[0].row()
+                    idx -= 1
+                    if idx <0:
+                        idx = self.lhp.count()-1
+                else:
+                    idx = self.lhp.count()-1
+                self.lhp.item(idx).setSelected(True)
+            if self.rhp.count():
+                sel = self.rhp.selectedIndexes()
+                if sel:
+                    idx = sel[0].row()
+                    idx -= 1
+                    if idx < 0:
+                        idx = self.rhp.count()-1
+                else:
+                    idx = self.rhp.count()-1
+                self.rhp.item(idx).setSelected(True)
+        elif a0.key() == qtc.Qt.Key.Key_Escape:
+            sel = self.lhp.selectedIndexes()
+            if sel:
+                self.lhp.item(sel[0].row()).setSelected(False)
+            sel = self.rhp.selectedIndexes()
+            if sel:
+                self.rhp.item(sel[0].row()).setSelected(False)
 
+        else:
+            super().keyPressEvent(a0)
 
