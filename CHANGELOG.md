@@ -1,3 +1,6 @@
+## [0.3.2] - 2025-08-11
+* fix failure to run on some systems due to outdated OpenGL calls
+
 ## [0.3.1] - 2025-08-11
 * fix failure to run on some systems due to unused OpenGL uniform
 
