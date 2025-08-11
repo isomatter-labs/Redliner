@@ -238,7 +238,6 @@ class RenderWidget(qtw.QLabel):
             self.x += dx/self.scale
             self.y += dy/self.scale
             self.redraw()
-            print(self.x, self.y)
         if self.mouse_button != qtc.Qt.MouseButton.NoButton:
             self.mouse_stack.append([ev.pos().x(), ev.pos().y()])
         self.mouse_hover = ev.pos().x(), ev.pos().y()

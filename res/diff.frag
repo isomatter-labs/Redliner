@@ -21,15 +21,16 @@ in vec2 uvLHS;
 in vec2 uvRHS;
 in vec2 uvTile;
 
+out vec4 fragColor;
 
 void main() {
-    gl_FragColor = vec4(1.0);
+    fragColor = vec4(1.0);
     if (renderLHS && uLHSWH.x > 0 && uvLHS.x > 0 && uvLHS.x < 1 && uvLHS.y > 0 && uvLHS.y < 1){
         if (renderRHS && uRHSWH.x > 0 && uvRHS.x > 0 && uvRHS.x < 1 && uvRHS.y > 0 && uvRHS.y < 1){
 
             // diff magic here
-            vec3 pxLhs = texture2D(uTextureLHS, uvLHS).rgb;
-            vec3 pxRhs = texture2D(uTextureRHS, uvRHS).rgb;
+            vec3 pxLhs = texture(uTextureLHS, uvLHS).rgb;
+            vec3 pxRhs = texture(uTextureRHS, uvRHS).rgb;
             float invLhs = 1-(pxLhs.x+pxLhs.y+pxLhs.z)/3;
             float invRhs = 1-(pxRhs.x+pxRhs.y+pxRhs.z)/3;
 
@@ -46,8 +47,8 @@ void main() {
                         vec2 cLhs = (dc/uLHSWH)+uvLHS;
                         vec2 cRhs = (dc/uRHSWH)+uvRHS;
 
-                        vec3 pxLhs = texture2D(uTextureLHS, cLhs).rgb;
-                        vec3 pxRhs = texture2D(uTextureRHS, cRhs).rgb;
+                        vec3 pxLhs = texture(uTextureLHS, cLhs).rgb;
+                        vec3 pxRhs = texture(uTextureRHS, cRhs).rgb;
 
                         diff += abs(pxLhs.r-pxRhs.r)+abs(pxLhs.g-pxRhs.g)+abs(pxLhs.b-pxRhs.b);
                     }
@@ -57,13 +58,13 @@ void main() {
                 }
 
             }
-            gl_FragColor = vec4(clamp(px, 0, 1), 1);
+            fragColor = vec4(clamp(px, 0, 1), 1);
         }
         else {
-            gl_FragColor = texture2D(uTextureLHS, uvLHS);
+            fragColor = texture(uTextureLHS, uvLHS);
         }
     }
     else if (renderRHS && uRHSWH.x > 0 && uvRHS.x > 0 && uvRHS.x < 1 && uvRHS.y > 0 && uvRHS.y < 1){
-        gl_FragColor = texture2D(uTextureRHS, uvRHS);
+        fragColor = texture(uTextureRHS, uvRHS);
     }
 }
