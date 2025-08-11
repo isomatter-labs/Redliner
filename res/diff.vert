@@ -7,22 +7,11 @@ uniform vec2 uLHSWH;
 uniform vec2 uRHSWH;
 uniform vec2 uPos;
 uniform float uScale;
-uniform float uTheta;
 
 out vec2 uvLHS;
 out vec2 uvRHS;
 
 void main() {
-    // do these steps since we're not using these uniforms yet
-    float theta = uTheta*0;
-    vec2 pos = uPos*0;
-    vec2 something = uPageWH*0;
-    vec2 something2 = uCanvasWH*0;
-//    pos = aTexCoord;
-
-//    vec4 position = vec4(aPosition, 1.0);
-//    position.xy = position.xy * 2 - 1;
-
     if (uLHSWH.x > 0){
         uvLHS = inCoord/uLHSWH;
     }

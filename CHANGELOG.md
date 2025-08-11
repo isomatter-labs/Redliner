@@ -1,3 +1,6 @@
+## [0.3.1] - 2025-08-11
+* fix failure to run on some systems due to unused OpenGL uniform
+
 ## [0.3.0] - 2025-08-10
 * add export to file
 * add export to clipboard

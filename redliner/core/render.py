@@ -147,7 +147,7 @@ class Renderer:
 
         self.vao_diff.program["uPos"] = x, y
         self.vao_diff.program["uScale"] = scale
-        self.vao_diff.program["uTheta"] = theta
+        # self.vao_diff.program["uTheta"] = theta
         self.vao_diff.program["uCanvasWH"] = width, height
         self.vao_diff.program["doHilight"] = do_hilight
         self.vao_diff.program["hilightThresh"] = hilight_thresh
