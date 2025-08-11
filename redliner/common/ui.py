@@ -55,7 +55,6 @@ class SettingsWidget(qtw.QWidget):
                 tgt_l = gb_l
             else:
                 _type, key, name, *args = row
-                val = self.pd[key]
                 _r = qtw.QWidget()
                 _l = qtw.QHBoxLayout(_r)
                 _l.setContentsMargins(0,0,0,0)
@@ -63,8 +62,10 @@ class SettingsWidget(qtw.QWidget):
                 lb = qtw.QLabel(name)
                 _l.addWidget(lb)
                 lb.setSizePolicy(qtw.QSizePolicy.Policy.Fixed, qtw.QSizePolicy.Policy.Fixed)
+                if _type != "button":
+                    val = self.pd[key]
                 if _type == "bool":
-                    w = qtw.QCheckBox()
+                    w = qtw.QCheckBox(name)
                     w.setChecked(val)
                     w.stateChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.isChecked()))
                 if _type == "spin":
@@ -75,6 +76,10 @@ class SettingsWidget(qtw.QWidget):
                 if _type == "color":
                     w = ColorButton(val)
                     w.signalColorChanged.connect(lambda *_, _k=key, _w=w: self.set(_k, _w.hx))
+                if _type == "button":
+                    lb.hide()
+                    w = qtw.QPushButton(name)
+                    w.pressed.connect(args[0])
                 _l.addWidget(w)
                 tgt_l.addWidget(_r)
         self._l.addStretch()

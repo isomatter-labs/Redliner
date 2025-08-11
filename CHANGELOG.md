@@ -1,3 +1,7 @@
+## [0.3.0] - 2025-08-10
+* add export to file
+* add export to clipboard
+
 ## [0.2.0] - 2025-08-10
 * Add zoom and pan in the canvas
 * add a few hotkeys:

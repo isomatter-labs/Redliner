@@ -1,3 +1,4 @@
+import pathlib
 import random
 import time
 
@@ -39,7 +40,6 @@ class RenderPage:
 
 class Renderer:
     def __init__(self):
-
         self.ctx = moderngl.create_standalone_context(samples=4)
         self.prog_diff = self.ctx.program(
             vertex_shader=DIFF_VERT,
@@ -170,6 +170,7 @@ class Renderer:
 
         return qim
 
+
 class RenderWidget(qtw.QLabel):
     def __init__(self, parent = None):
         self.parent = parent
@@ -268,3 +269,18 @@ class RenderWidget(qtw.QLabel):
                                   self.height())
         self.setPixmap(qtg.QPixmap.fromImage(px))
         self.setMinimumSize(qtc.QSize(64, 64))
+
+    def export(self, path):
+        if self.renderer.page.lhs is not None or self.renderer.page.rhs is not None:
+            im = self.renderer.render(hex_to_rgb(self.pd["added_color"]),
+                                hex_to_rgb(self.pd["removed_color"]),
+                                hex_to_rgb(self.pd["highlighter_color"]),
+                                self.pd["highlighter_en"],
+                                1 - self.pd["highlighter_sensitivity"] / 100,
+                                self.pd["highlighter_size"])
+            if path == ":clipboard:":
+                cb = qtw.QApplication.clipboard()
+                cb.clear(mode=cb.Mode.Clipboard)
+                cb.setPixmap(qtg.QPixmap.fromImage(im), mode=cb.Mode.Clipboard)
+            else:
+                im.save(path)

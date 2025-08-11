@@ -4,3 +4,4 @@ pyinstaller
 pillow
 numpy
 requests
+pyperclip

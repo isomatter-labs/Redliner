@@ -1,6 +1,13 @@
+import os
+import shutil
+import traceback
+
+import pyperclip
 from PyQt6 import QtWidgets as qtw
+
+from redliner.common.temporary_file_manager import TemporaryFileManager
 from redliner.common.persistent_dict import PersistentDict
-from redliner.common.ui import SettingsWidget
+from redliner.common.ui import SettingsWidget, say
 from redliner.common import hex_to_rgb
 from redliner.core.ui import DocPreview
 from redliner.extensions.fetcher import FETCHER_TYPES
@@ -14,6 +21,7 @@ class DocMan(qtw.QWidget):
     def __init__(self):
         super().__init__()
         self.pd = PersistentDict()
+        self.tfm = TemporaryFileManager()
         self.pd.default("highlighter_en", True)
         self.pd.default("highlighter_size", 4)
         self.pd.default("highlighter_sensitivity", 100)
@@ -56,7 +64,10 @@ class DocMan(qtw.QWidget):
             ["bool", "highlighter_en", "Enabled"],
             ["spin", "highlighter_size", "Size (px)", 0, 128],
             ["spin", "highlighter_sensitivity", "Sensitivity", 0, 100],
-            ["color", "highlighter_color", "Highlight Color"]
+            ["color", "highlighter_color", "Highlight Color"],
+            ["Export Canvas Image"],
+            ["button", "", "To FIle (Ctrl+Shift+S)", self.export_im],
+            ["button", "", "To Clipboard (Ctrl+C)", self.export_clip]
         ], 196)
         self.settings.signalSettingsChanged.connect(self.regen)
         _l.addWidget(self.settings)
@@ -112,6 +123,7 @@ class DocMan(qtw.QWidget):
         self.preview.set_page(render_page)
 
     def keyPressEvent(self, a0):
+        print(a0.modifiers())
         if a0.key() == qtc.Qt.Key.Key_Home:
             self.preview.home()
         elif a0.key() == qtc.Qt.Key.Key_PageDown:
@@ -164,7 +176,34 @@ class DocMan(qtw.QWidget):
             sel = self.rhp.selectedIndexes()
             if sel:
                 self.rhp.item(sel[0].row()).setSelected(False)
-
+        elif a0.key() == qtc.Qt.Key.Key_C  and a0.modifiers() == qtc.Qt.KeyboardModifier.ControlModifier:
+            self.export_clip()
+        elif a0.key() == qtc.Qt.Key.Key_S  and a0.modifiers() == (qtc.Qt.KeyboardModifier.ControlModifier | qtc.Qt.KeyboardModifier.ShiftModifier):
+            self.export_im()
         else:
             super().keyPressEvent(a0)
 
+
+    def export_im(self):
+        if self.preview.renderer.page.lhs is None and self.preview.renderer.page.rhs is None:
+            say("Nothing to export.")
+            return
+
+        file_path, _ = qtw.QFileDialog.getSaveFileName(None,
+                                                       "Select a file",  # Dialog title
+                                                       self.pd["path"],  # Initial directory (empty string for default)
+                                                       "All Files (*)"  # File filters
+                                                       )
+
+        try:
+            head, _ = os.path.split(file_path)
+            self.pd["path"] = head
+            self.preview.export(file_path)
+        except:
+            say(traceback.format_exc())
+
+    def export_clip(self):
+        if self.preview.renderer.page.lhs is None and self.preview.renderer.page.rhs is None:
+            say("Nothing to copy.")
+            return
+        self.preview.export(":clipboard:")
