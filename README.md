@@ -24,10 +24,10 @@ Redliner allows for quickly identifying changes in text and visual documents by 
 - [X] Upload to GitHub
 - [X] Develop installation / distribution procedure
 - [X] Switch to OpenGL
+- [X] Implement dynamic canvas
 - [X] Add update check button / built-in update installation
   - [ ] Make new version notif only pop up once
 - [ ] Finish initial documentation
-- [ ] Implement dynamic canvas
 - [ ] Implement export document composition
 - [ ] Add CLI interface
 - ### V2
