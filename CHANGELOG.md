@@ -1,3 +1,6 @@
+## [0.3.3] - 2025-08-11
+* Switch CJett links to Isomatter-labs links
+
 ## [0.3.2] - 2025-08-11
 * fix failure to run on some systems due to outdated OpenGL calls
 

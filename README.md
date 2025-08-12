@@ -1,20 +1,20 @@
 
-# Redliner [0.3.2] - PDF (and more) Compare Tool
+# Redliner [0.3.3] - PDF (and more) Compare Tool
 
 EARLY DEVELOPMENT! Expect bugs and missing features. No version checking / updating exists yet. <br><br>
 Redliner allows for quickly identifying changes in text and visual documents by generating a per-pixel visual diff. <br> <br>
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/cjett)
 
-![Example Diff Screenshot](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/doc/example.png)
-![Example Schematic Diff](https://raw.githubusercontent.com/CJett/Redliner/refs/heads/main/doc/example_scm.png)
+![Example Diff Screenshot](https://raw.githubusercontent.com/isomatter-labs/Redliner/refs/heads/main/doc/example.png)
+![Example Schematic Diff](https://raw.githubusercontent.com/isomatter-labs/Redliner/refs/heads/main/doc/example_scm.png)
 
 ## Installing
-- Grab the latest windows installer or portable EXE from [https://github.com/CJett/Redliner/releases](https://github.com/CJett/Redliner/releases)
+- Grab the latest windows installer or portable EXE from [https://github.com/isomatter-labs/Redliner/releases](https://github.com/CJett/Redliner/releases)
 
 ## Building Locally
 - install python 3.13
 - (optional) install Inno Setup 6 for installer creation
-- `git clone https://github.com/CJett/Redliner.git`
+- `git clone https://github.com/isomatter-labs/Redliner.git`
 - `pip install -r requirements.txt`
 - `scripts/build-all-windows.bat` (or just the debug / onefile versions)
 - EXE's and installer are in /dist/
