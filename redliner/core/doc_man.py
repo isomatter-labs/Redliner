@@ -75,6 +75,12 @@ class DocMan(qtw.QWidget):
         _l.addWidget(self.preview)
         self.fetchers = {f.desc: f for f in [F() for F in FETCHER_TYPES]}
 
+        # Bind the Local Fetcher's fetch to the drag and drop events of the DocPreview
+        self.lhp.signalFileDropRequest.connect(lambda: self.__setattr__("click_side", "L"))
+        self.lhp.signalFileDropRequest.connect(self.fetchers["Local File"].fetch)
+        self.rhp.signalFileDropRequest.connect(lambda: self.__setattr__("click_side", "R"))
+        self.rhp.signalFileDropRequest.connect(self.fetchers["Local File"].fetch)
+
         for k, v in self.fetchers.items():
             v.signalDocReady.connect(self.doc_ready)
             gb = qtw.QGroupBox(k)
