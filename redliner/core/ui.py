@@ -72,5 +72,5 @@ class DocPreview(qtw.QListWidget):
             _logger.info(f"Dragged file dropped: {url}")
             self.signalFileDropRequest.emit(Path(url))
             event.acceptProposedAction() # type: ignore[union-attr]
-        else:   
+        else:
             event.ignore() # type: ignore[union-attr]
