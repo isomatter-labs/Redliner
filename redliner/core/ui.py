@@ -39,7 +39,7 @@ class DocPreview(qtw.QListWidget):
             super().keyPressEvent(e)
 
     @staticmethod
-    def _urlFromEvent(event: QDragEnterEvent | QDropEvent) -> Path | None:
+    def _urlFromEvent(event: QDragEnterEvent | QDropEvent) -> qtc.QUrl | None:
         if event.mimeData().hasUrls(): # type: ignore[union-attr]
             urls = event.mimeData().urls() # type: ignore[union-attr]
             if len(urls) == 1:
