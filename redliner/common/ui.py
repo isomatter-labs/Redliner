@@ -1,7 +1,10 @@
 from PyQt6 import QtWidgets as qtw, QtCore as qtc, QtGui as qtg
+import logging
 
 from redliner.common.persistent_dict import PersistentDict
 from redliner.common import rgb_to_hex
+
+_logger = logging.getLogger(__name__)
 
 
 def say(message: str, title=""):
@@ -30,11 +33,16 @@ class ColorButton(qtw.QPushButton):
 
     def color_pick(self):
         color_pick = qtw.QColorDialog.getColor(qtg.QColor(self.hx))
-        r, g, b, a = color_pick.getRgb()
-        self.hx = rgb_to_hex(r, g, b)
-        self.setStyleSheet(f"background-color:{self.hx}")
-        self.setText(self.hx)
-        self.signalColorChanged.emit(self.hx)
+        if not color_pick.isValid():
+            _logger.debug(f"Color invalid, cancel")
+            return
+        _logger.info(f"Color picked: {color_pick.name()}")
+        if color_pick.isValid():
+            r, g, b, a = color_pick.getRgb()
+            self.hx = rgb_to_hex(r, g, b)
+            self.setStyleSheet(f"background-color:{self.hx}")
+            self.setText(self.hx)
+            self.signalColorChanged.emit(self.hx)
 
 
 class SettingsWidget(qtw.QWidget):
