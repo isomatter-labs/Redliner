@@ -1,5 +1,5 @@
 
-# Redliner [0.3.3] - PDF (and more) Compare Tool
+# Redliner [0.4.0] - PDF (and more) Compare Tool
 
 EARLY DEVELOPMENT! Expect bugs and missing features. No version checking / updating exists yet. <br><br>
 Redliner allows for quickly identifying changes in text and visual documents by generating a per-pixel visual diff. <br> <br>
