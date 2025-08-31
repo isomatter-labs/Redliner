@@ -1,3 +1,7 @@
+## [0.4.0] - 2025-08-30
+* Added drag/drop to new/old DocPreview widgets - thanks Isaac!
+* Fix color defaulting to black when canceled - thanks Isaac!
+
 ## [0.3.3] - 2025-08-11
 * Switch CJett links to Isomatter-labs links
 
