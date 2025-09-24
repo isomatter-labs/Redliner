@@ -3,7 +3,7 @@ import shutil
 import traceback
 
 import pyperclip
-from PyQt6 import QtWidgets as qtw
+from PySide6 import QtWidgets as qtw
 
 from redliner.common.temporary_file_manager import TemporaryFileManager
 from redliner.common.persistent_dict import PersistentDict
@@ -12,7 +12,7 @@ from redliner.common import hex_to_rgb
 from redliner.core.ui import DocPreview
 from redliner.extensions.fetcher import FETCHER_TYPES
 from redliner.extensions.source_doc import SrcDoc
-from PyQt6 import QtCore as qtc, QtGui as qtg
+from PySide6 import QtCore as qtc, QtGui as qtg
 
 from .render import RenderPage, RenderWidget
 

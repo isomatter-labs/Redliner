@@ -1,4 +1,4 @@
-from PyQt6 import QtGui as qtg
+from PySide6 import QtGui as qtg
 import numpy as np
 
 class TextBox:
