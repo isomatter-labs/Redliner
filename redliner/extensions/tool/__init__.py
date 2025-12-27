@@ -1,4 +1,4 @@
-from PyQt6 import QtCore as qtc
+from PySide6 import QtCore as qtc
 
 class Tool():
     name = "Abstract Tool"

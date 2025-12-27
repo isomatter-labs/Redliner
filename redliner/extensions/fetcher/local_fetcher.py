@@ -1,6 +1,6 @@
 from . import Fetcher
 from redliner.common.ui import say
-from PyQt6 import QtWidgets as qtw
+from PySide6 import QtWidgets as qtw
 import traceback
 import os
 

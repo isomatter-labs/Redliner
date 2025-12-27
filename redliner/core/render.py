@@ -3,7 +3,7 @@ import random
 import time
 
 from PIL import Image
-from PyQt6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
+from PySide6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
 
 from redliner.common.persistent_dict import PersistentDict
 from redliner.common import hex_to_rgb

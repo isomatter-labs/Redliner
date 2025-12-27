@@ -1,6 +1,6 @@
 import os
 
-from PyQt6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
+from PySide6 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
 
 import threading
 import logging
@@ -45,7 +45,7 @@ except:
 
 
 class Redliner(qtw.QMainWindow):
-    signalParseUpdates = qtc.pyqtSignal(object)
+    signalParseUpdates = qtc.Signal(object)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle(f"Redliner v{VERSION}")

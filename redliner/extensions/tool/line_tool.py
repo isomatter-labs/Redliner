@@ -1,4 +1,4 @@
-from PyQt6 import QtCore as qtc, QtGui as qtg
+from PySide6 import QtCore as qtc, QtGui as qtg
 from . import Tool
 from ..feature.infinite_crosshair_feature import InfiniteCrosshairFeature
 

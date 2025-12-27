@@ -1,4 +1,4 @@
-from PyQt6 import QtWidgets as qtw, QtCore as qtc, QtGui as qtg
+from PySide6 import QtWidgets as qtw, QtCore as qtc, QtGui as qtg
 import logging
 
 from redliner.common.persistent_dict import PersistentDict
@@ -22,7 +22,7 @@ def get_text(message: str = "", title: str = "", start_string: str = ""):
 
 
 class ColorButton(qtw.QPushButton):
-    signalColorChanged = qtc.pyqtSignal(str)
+    signalColorChanged = qtc.Signal(str)
 
     def __init__(self, hex):
         super().__init__()
@@ -46,7 +46,7 @@ class ColorButton(qtw.QPushButton):
 
 
 class SettingsWidget(qtw.QWidget):
-    signalSettingsChanged = qtc.pyqtSignal()
+    signalSettingsChanged = qtc.Signal()
     def __init__(self, items:list, width:int):
         super().__init__()
         self.pd = PersistentDict()

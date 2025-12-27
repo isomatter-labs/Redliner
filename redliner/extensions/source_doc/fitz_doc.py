@@ -1,6 +1,6 @@
 from . import SrcDoc, TextBox
 import fitz
-from PyQt6 import QtGui as qtg, QtCore as qtc
+from PySide6 import QtGui as qtg, QtCore as qtc
 from redliner.common.constants import PREVIEW_SIZE, PREVIEW_DPI
 import numpy as np
 

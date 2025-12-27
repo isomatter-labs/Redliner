@@ -2,12 +2,12 @@ import tempfile
 import time
 import webbrowser
 
-from PyQt6 import QtWidgets as qtw, QtCore as qtc, QtGui as qtg
-from PyQt6.QtGui import QSurfaceFormat, QOpenGLContext, QOffscreenSurface
-from PyQt6.QtOpenGL import QOpenGLFramebufferObjectFormat, QOpenGLFramebufferObject
-from PyQt6.QtPdf import QPdfDocument
+from PySide6 import QtWidgets as qtw, QtCore as qtc, QtGui as qtg
+from PySide6.QtGui import QSurfaceFormat, QOpenGLContext, QOffscreenSurface
+from PySide6.QtOpenGL import QOpenGLFramebufferObjectFormat, QOpenGLFramebufferObject
+from PySide6.QtPdf import QPdfDocument
 import fitz
-from PyQt6.QtOpenGLWidgets import QOpenGLWidget
+from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from OpenGL.GL import *
 import numpy as np
 
@@ -23,11 +23,11 @@ class Feature:
     pass
 
 class RenderWidget(QOpenGLWidget):
-    signalMouseClick = qtc.pyqtSignal(float, float, qtc.Qt.MouseButton) # canvas X,Y
-    signalMouseMove = qtc.pyqtSignal(float, float)
-    signalMouseRelease = qtc.pyqtSignal(float, float, qtc.Qt.MouseButton)
-    signalKeyPressed = qtc.pyqtSignal(float, float, qtc.Qt.Key)
-    signalKeyReleased = qtc.pyqtSignal(float, float, qtc.Qt.Key)
+    signalMouseClick = qtc.Signal(float, float, qtc.Qt.MouseButton) # canvas X,Y
+    signalMouseMove = qtc.Signal(float, float)
+    signalMouseRelease = qtc.Signal(float, float, qtc.Qt.MouseButton)
+    signalKeyPressed = qtc.Signal(float, float, qtc.Qt.Key)
+    signalKeyReleased = qtc.Signal(float, float, qtc.Qt.Key)
     
     def __init__(self):
         super().__init__()
@@ -166,10 +166,10 @@ class RenderWidget(QOpenGLWidget):
         self.signalKeyReleased.emit(a0.key())
 
 class RenderWidget2(QOpenGLWidget):
-    signalClick = qtc.pyqtSignal(float, float, qtc.Qt.MouseButton) # canvas X,Y
-    signalDrag = qtc.pyqtSignal(float, float)
-    signalRelease = qtc.pyqtSignal(float, float, qtc.Qt.MouseButton)
-    signalKeyPressed = qtc.pyqtSignal()
+    signalClick = qtc.Signal(float, float, qtc.Qt.MouseButton) # canvas X,Y
+    signalDrag = qtc.Signal(float, float)
+    signalRelease = qtc.Signal(float, float, qtc.Qt.MouseButton)
+    signalKeyPressed = qtc.Signal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

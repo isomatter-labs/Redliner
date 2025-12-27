@@ -1,4 +1,4 @@
-from PyQt6 import QtCore as qtc
+from PySide6 import QtCore as qtc
 import logging
 import traceback
 
@@ -9,7 +9,7 @@ from redliner.extensions.source_doc import SrcDoc, SRC_DOC_TYPES
 
 class Fetcher(qtc.QObject):
     desc = ""
-    signalDocReady = qtc.pyqtSignal(SrcDoc)
+    signalDocReady = qtc.Signal(SrcDoc)
 
     def __init__(self):
         super().__init__()

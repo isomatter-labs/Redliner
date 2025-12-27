@@ -1,6 +1,6 @@
 import logging
-from PyQt6 import QtWidgets as qtw, QtCore as qtc
-from PyQt6.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
+from PySide6 import QtWidgets as qtw, QtCore as qtc
+from PySide6.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
 from redliner.common.constants import PREVIEW_SIZE
 from redliner.extensions.source_doc import SrcDoc
 from pathlib import Path
@@ -8,8 +8,8 @@ from pathlib import Path
 _logger = logging.getLogger(__name__)
 
 class DocPreview(qtw.QListWidget):
-    signalSelectionChanged = qtc.pyqtSignal()
-    signalFileDropRequest = qtc.pyqtSignal(Path)
+    signalSelectionChanged = qtc.Signal()
+    signalFileDropRequest = qtc.Signal(Path)
 
     def __init__(self, parent):
         self.parent = parent
